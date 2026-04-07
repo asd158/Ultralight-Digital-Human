@@ -26,12 +26,12 @@ class MyDataset(Dataset):
         if self.mode == "wenet":
             self.audio_feats = np.load(img_dir+"/aud_wenet.npy")
         if self.mode == "hubert":
-            self.audio_feats = np.load(img_dir+"/aud_hu.npy")
+            self.audio_feats = np.load(img_dir+"/raw.wav.npy")
             
         self.audio_feats = self.audio_feats.astype(np.float32)
-        
+
     def __len__(self):
-        return self.audio_feats.shape[0] if self.audio_feats[0]<len(self.img_path_list) else len(self.img_path_list)
+        return min(self.audio_feats.shape[0], len(self.img_path_list))
     
     def get_audio_features(self, features, index):  # 在当前音频帧前后各取4帧音频特征
         left = index - 4

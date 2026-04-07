@@ -1,16 +1,20 @@
 import argparse
 from os import wait3
 
+import os
 import numpy as np
 import cv2
 import math
-
 import torch
 import torchvision
 from detect_face import SCRFD
 # from models.pfld_lite import PFLDInference
 # from models.pfld import PFLDInference
 from pfld_mobileone import PFLD_GhostOne as PFLDInference
+
+curr_path = os.path.dirname(os.path.abspath(__file__))
+
+
 def face_det(img, model):
 
     cropped_imgs = []
@@ -70,12 +74,12 @@ def face_det(img, model):
 class Landmark:
     def __init__(self):
         
-        with open('./mean_face.txt', 'r') as f_mean_face:
+        with open(os.path.join(curr_path,'./mean_face.txt'), 'r') as f_mean_face:
             mean_face = f_mean_face.read()
         self.mean_face = np.asarray(mean_face.split(' '), dtype=np.float32)
-        self.det_net = SCRFD('./scrfd_2.5g_kps.onnx', confThreshold=0.1, nmsThreshold=0.5)
+        self.det_net = SCRFD(os.path.join(curr_path,'./scrfd_2.5g_kps.onnx'), confThreshold=0.1, nmsThreshold=0.5)
 
-        checkpoint = torch.load('./checkpoint_epoch_335.pth.tar')
+        checkpoint = torch.load(os.path.join(curr_path,'./checkpoint_epoch_335.pth.tar'))
         self.pfld_backbone = PFLDInference().cuda()
         self.pfld_backbone.load_state_dict(checkpoint['pfld_backbone'])
         self.pfld_backbone.eval()

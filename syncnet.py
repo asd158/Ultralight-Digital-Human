@@ -1,4 +1,5 @@
 import torch
+from huggingface_hub.utils import tqdm
 from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
@@ -27,7 +28,7 @@ class Dataset(object):
         if mode=="wenet":
             audio_feats_path = dataset_dir+"/aud_wenet.npy"
         if mode=="hubert":
-            audio_feats_path = dataset_dir+"/aud_hu.npy"
+            audio_feats_path = dataset_dir+"/raw.wav.npy"
         self.mode = mode
         self.audio_feats = np.load(audio_feats_path)
         self.audio_feats = self.audio_feats.astype(np.float32)
@@ -225,7 +226,7 @@ def train(save_dir, dataset_dir, mode):
     model = SyncNet_color(mode).cuda()
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=0.001)
-    for epoch in range(40):
+    for epoch in tqdm(range(40),desc="Train Epoch"):
         for batch in train_data_loader:
             imgT, audioT, y = batch
             imgT = imgT.cuda()
@@ -239,14 +240,11 @@ def train(save_dir, dataset_dir, mode):
         torch.save(model.state_dict(), os.path.join(save_dir, str(epoch)+'.pth'))
             
             
-    
-    
-    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--save_dir', type=str)
     parser.add_argument('--dataset_dir', type=str)
-    parser.add_argument('--asr', type=str)
+    parser.add_argument('--asr', type=str, default='hubert', help="wenet or hubert")
     opt = parser.parse_args()
     
     # syncnet = SyncNet_color(mode=opt.asr)
